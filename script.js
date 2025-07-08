@@ -1,21 +1,52 @@
 "use_strict";
 
-window.addEventListener('DOMContentLoaded', () => {
-  getRandomCatImage();
-  clearButton();
-});
+let config;
+let breedId;
+
+let breedSearch = false;
+
+let imageCounter = 0;
 
 const getCatButton = document.getElementById("get-cat");
 const catImageContainer = document.getElementById("cat-container");
 const clearCatButton = document.getElementById("clear");
+const breedSelect = document.querySelector("#breed-select");
 
-let imageCounter = 0;
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadConfig();
+  await getBreeds();
+  getCatImage();
+  clearButton();
 
-function getRandomCatImage(){
+  breedSelect.addEventListener("change", (e) => {
+    const selectedOption = e.target.selectedOptions[0];
+    console.log("breed_id: " + selectedOption.value);
+    console.log("breed_name: " + selectedOption.text);
+
+    if (selectedOption.value !== "")
+    {
+      breedSearch = true;
+      breedId = selectedOption.value;
+      getCatButton.innerText = "Get " + selectedOption.text + " Cat";
+    }
+    else
+    {
+      breedSearch = false;
+      getCatButton.innerText = "Get a random Cat";
+    }
+
+    console.log(breedSearch);
+  })
+});
+
+function getCatImage(){
   getCatButton.addEventListener("click", () => {
-      getApiCatImage();
-      clearCatButton.disabled = false;
-      imageCounter++;
+
+    breedSearch ? getCatBreedImage() : getApiCatImage();
+
+    clearCatButton.disabled = false;
+
+    imageCounter++;
   });
 }
 
@@ -26,47 +57,75 @@ function clearButton(){
   });
 }
 
-const config = import('./config.json');
+async function getCatBreedImage() {
 
-function getApiCatImage() {
-  fetch("https://api.thecatapi.com/v1/images/search", {
-          headers: {
-            "x-api-key": config.catApiKey
-          }
-        })
-        .then(response => response.json())  
-        .then(data => {                     
-          console.log(data);               
-          const img = document.createElement("img");
-          img.src = data[0].url;
-          img.alt = "Cute cat";
+  const response = await fetch(config.catApiUrl + "/images/search?breed_id=" + breedId, {
+    headers: {
+      "x-api-key": config.catApiKey
+    }
+  });
+  
+  const catBreedImageData = await response.json();
 
-          // Add Tailwind classes:
-          img.classList.add(
-            "absolute", 
-            "max-w-[200px]", 
-            "rounded-xl", 
-            "shadow-lg", 
-            "transition-transform", 
-            "duration-300", 
-            "hover:scale-105",
-            "float"
-          );
+  generateImage(catBreedImageData);
+}
 
-          // Set random position inside container:
-          setRandomPosition(img);
+async function getBreeds() {
+  
+  const response = await fetch(config.catApiUrl + "/breeds", {
+    headers: {
+      "x-api-key": config.catApiKey
+    }
+  });
+  const breedData = await response.json();
 
-          catImageContainer.appendChild(img);
-        })
-        .catch(error => {
-          console.error("Error fetching cat:", error);
-        }); 
+  breedData.forEach((breed) => {
+    const option = document.createElement("option");
+    option.value = breed.id;
+    option.innerText = breed.name;
+    option.classList.add("text-indigo-900", "bg-yellow-300", "hover:bg-yellow-400");
+
+    breedSelect.appendChild(option);
+  });
+}
+
+async function getApiCatImage() {
+
+  const response = await fetch(config.catApiUrl + "/images/search", {
+    headers: {
+      "x-api-key": config.catApiKey
+    }
+  });
+
+  const catImageData = await response.json();
+
+  generateImage(catImageData);
+}
+
+function generateImage(imageData) {
+
+  const img = document.createElement("img");
+  img.src = imageData[0].url;
+  img.alt = "Cute cat";
+
+  img.classList.add(
+      "absolute", 
+      "max-w-[200px]", 
+      "rounded-xl", 
+      "shadow-lg", 
+      "transition-transform", 
+      "duration-300", 
+      "hover:scale-105",
+      "float"
+    );
+
+  setRandomPosition(img);
+
+  catImageContainer.appendChild(img);
 }
 
 function setRandomPosition(element) {
-  const containerRect = catImageContainer.getBoundingClientRect();
-  
-  // Add padding to avoid cutting off:
+
   const padding = 20;
   const maxLeft = catImageContainer.clientWidth - 200 - padding;
   const maxTop = catImageContainer.clientHeight - 200 - padding;
@@ -76,4 +135,9 @@ function setRandomPosition(element) {
 
   element.style.left = `${randomLeft}px`;
   element.style.top = `${randomTop}px`;
+}
+
+async function loadConfig() {
+  const response = await fetch('./config.json');
+  config = await response.json();
 }
