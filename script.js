@@ -20,8 +20,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   breedSelect.addEventListener("change", (e) => {
     const selectedOption = e.target.selectedOptions[0];
-    console.log("breed_id: " + selectedOption.value);
-    console.log("breed_name: " + selectedOption.text);
 
     if (selectedOption.value !== "")
     {
@@ -34,8 +32,6 @@ window.addEventListener('DOMContentLoaded', async () => {
       breedSearch = false;
       getCatButton.innerText = "Get a random Cat";
     }
-
-    console.log(breedSearch);
   })
 });
 
