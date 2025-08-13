@@ -1,6 +1,5 @@
 "use_strict";
 
-let config;
 let breedId;
 
 let breedSearch = false;
@@ -13,7 +12,6 @@ const clearCatButton = document.getElementById("clear");
 const breedSelect = document.querySelector("#breed-select");
 
 window.addEventListener('DOMContentLoaded', async () => {
-  await loadConfig();
   await getBreeds();
   getCatImage();
   clearButton();
@@ -55,9 +53,9 @@ function clearButton(){
 
 async function getCatBreedImage() {
 
-  const response = await fetch(config.catApiUrl + "/images/search?breed_id=" + breedId, {
+  const response = await fetch(process.env.catApiUrl + "/images/search?breed_id=" + breedId, {
     headers: {
-      "x-api-key": config.catApiKey
+      "x-api-key": process.env.catApiKey
     }
   });
   
@@ -68,9 +66,9 @@ async function getCatBreedImage() {
 
 async function getBreeds() {
   
-  const response = await fetch(config.catApiUrl + "/breeds", {
+  const response = await fetch(process.env.catApiUrl + "/breeds", {
     headers: {
-      "x-api-key": config.catApiKey
+      "x-api-key": process.env.catApiKey
     }
   });
   const breedData = await response.json();
@@ -87,9 +85,9 @@ async function getBreeds() {
 
 async function getApiCatImage() {
 
-  const response = await fetch(config.catApiUrl + "/images/search", {
+  const response = await fetch(process.env.catApiUrl + "/images/search", {
     headers: {
-      "x-api-key": config.catApiKey
+      "x-api-key": process.env.catApiKey
     }
   });
 
@@ -133,7 +131,3 @@ function setRandomPosition(element) {
   element.style.top = `${randomTop}px`;
 }
 
-async function loadConfig() {
-  const response = await fetch('./config.json');
-  config = await response.json();
-}
