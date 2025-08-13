@@ -52,48 +52,27 @@ function clearButton(){
 }
 
 async function getCatBreedImage() {
-
-  const response = await fetch(process.env.catApiUrl + "/images/search?breed_id=" + breedId, {
-    headers: {
-      "x-api-key": process.env.catApiKey
-    }
-  });
-  
-  const catBreedImageData = await response.json();
-
-  generateImage(catBreedImageData);
+  const response = await fetch(`/.netlify/functions/breedCat?breed_id=${breedId}`);
+  const data = await response.json();
+  generateImage(data);
 }
 
 async function getBreeds() {
-  
-  const response = await fetch(process.env.catApiUrl + "/breeds", {
-    headers: {
-      "x-api-key": process.env.catApiKey
-    }
-  });
+  const response = await fetch('/.netlify/functions/breeds');
   const breedData = await response.json();
 
   breedData.forEach((breed) => {
     const option = document.createElement("option");
     option.value = breed.id;
     option.innerText = breed.name;
-    option.classList.add("text-indigo-900", "bg-yellow-300", "hover:bg-yellow-400");
-
     breedSelect.appendChild(option);
   });
 }
 
 async function getApiCatImage() {
-
-  const response = await fetch(process.env.catApiUrl + "/images/search", {
-    headers: {
-      "x-api-key": process.env.catApiKey
-    }
-  });
-
-  const catImageData = await response.json();
-
-  generateImage(catImageData);
+  const response = await fetch('/.netlify/functions/randomCat');
+  const data = await response.json();
+  generateImage(data);
 }
 
 function generateImage(imageData) {
